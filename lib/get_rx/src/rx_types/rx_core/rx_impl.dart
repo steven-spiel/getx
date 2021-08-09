@@ -7,7 +7,23 @@ part of rx_types;
 mixin RxObjectMixin<T> on NotifyManager<T> {
   late T _value;
 
-  /// Makes a direct update of [value] adding it to the Stream
+  /// Makes a direct update of [value] adding it to the /// Returns a [StreamSubscription] similar to [listen], but with the
+  /// added benefit that it primes the stream with the current [value], rather
+  /// than waiting for the next [value]. This should not be called in [onInit]
+  /// or anywhere else during the build process.
+  StreamSubscription<T> listenAndPump(void Function(T event) onData,
+      {Function? onError, void Function()? onDone, bool? cancelOnError}) {
+    final subscription = listen(
+      onData,
+      onError: onError,
+      onDone: onDone,
+      cancelOnError: cancelOnError,
+    );
+
+    subject.add(value);
+
+    return subscription;
+  }
   /// useful when you make use of Rx for custom Types to referesh your UI.
   ///
   /// Sample:
@@ -110,6 +126,24 @@ mixin RxObjectMixin<T> on NotifyManager<T> {
   }
 
   Stream<T> get stream => subject.stream;
+
+  /// Returns a [StreamSubscription] similar to [listen], but with the
+  /// added benefit that it primes the stream with the current [value], rather
+  /// than waiting for the next [value]. This should not be called in [onInit]
+  /// or anywhere else during the build process.
+  StreamSubscription<T> listenAndPump(void Function(T event) onData,
+      {Function? onError, void Function()? onDone, bool? cancelOnError}) {
+    final subscription = listen(
+      onData,
+      onError: onError,
+      onDone: onDone,
+      cancelOnError: cancelOnError,
+    );
+
+    subject.add(value);
+
+    return subscription;
+  }
 
   /// Binds an existing `Stream<T>` to this Rx<T> to keep the values in sync.
   /// You can bind multiple sources to update the value.
